@@ -48,7 +48,7 @@ export function ProjectCard({ project, index, onOpen }: Props) {
       >
         <motion.div
           layoutId={`thumb-${project.slug}`}
-          className="relative aspect-[4/3] overflow-hidden rounded-[16px]"
+          className="relative aspect-[16/10] overflow-hidden rounded-[16px]"
           style={{ backgroundColor: project.color }}
         >
           <ThumbArt color={project.color} />
@@ -74,11 +74,14 @@ export function ProjectCard({ project, index, onOpen }: Props) {
           </h3>
           <p className="mt-2 text-[15px] leading-relaxed text-muted">{project.description}</p>
           <ul className="mt-4 flex flex-wrap gap-1.5" aria-label="Tech used">
-            {project.tags.map((t) => (
+            {project.tags.slice(0, 4).map((t) => (
               <li key={t} className="rounded-full border border-line-subtle px-2.5 py-1 font-mono text-[11px] text-muted">
                 {t}
               </li>
             ))}
+            {project.tags.length > 4 && (
+              <li className="px-1.5 py-1 font-mono text-[11px] text-dim">+{project.tags.length - 4}</li>
+            )}
           </ul>
           <div className="relative z-10 mt-5 flex items-center gap-2">
             {project.liveUrl && (

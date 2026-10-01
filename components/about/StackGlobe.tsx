@@ -3,17 +3,30 @@
 import { useEffect, useRef } from "react";
 import { stack } from "@/content/site";
 import { prefersReducedMotion } from "@/lib/hooks";
+import { getAccentHex } from "@/lib/store";
 
 /**
  * Tech stack laid out on a sphere and projected in JS, so text stays crisp HTML (no WebGL).
+ * A dotted globe is drawn on a 2D canvas behind the labels with the same rotation.
  * Spins slowly, can be dragged with inertia, and only animates while on screen.
  */
 export function StackGlobe() {
   const ref = useRef<HTMLUListElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     const el = ref.current;
-    if (!el) return;
+    const canvas = canvasRef.current;
+    if (!el || !canvas) return;
+    const ctx = canvas.getContext("2d")!;
+    // Dense Fibonacci point cloud for the globe surface.
+    const DOTS = 520;
+    const dots = Array.from({ length: DOTS }, (_, i) => {
+      const y = 1 - (i / (DOTS - 1)) * 2;
+      const r = Math.sqrt(1 - y * y);
+      const theta = i * Math.PI * (3 - Math.sqrt(5));
+      return { x: Math.cos(theta) * r, y, z: Math.sin(theta) * r };
+    });
     const items = Array.from(el.querySelectorAll<HTMLLIElement>("li"));
     const n = items.length;
     // Fibonacci sphere: evenly spread points.
@@ -37,14 +50,45 @@ export function StackGlobe() {
 
     // Cached so the per-frame draw never forces a layout read.
     let radius = el.clientWidth * 0.38;
+    let size = el.clientWidth;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
     const ro = new ResizeObserver(() => {
-      radius = el.clientWidth * 0.38;
+      size = el.clientWidth;
+      radius = size * 0.38;
+      canvas.width = Math.round(size * dpr);
+      canvas.height = Math.round(size * dpr);
       draw();
     });
     ro.observe(el);
 
     const draw = () => {
       const cy = Math.cos(rotY), sy = Math.sin(rotY), cx = Math.cos(rotX), sx = Math.sin(rotX);
+
+      // Globe: back dots faint, front dots brighter and tinted with the accent.
+      const accent = getAccentHex();
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, size, size);
+      const half = size / 2;
+      const glow = ctx.createRadialGradient(half, half, 0, half, half, radius * 1.15);
+      glow.addColorStop(0, accent + "14");
+      glow.addColorStop(1, accent + "00");
+      ctx.fillStyle = glow;
+      ctx.fillRect(0, 0, size, size);
+      for (const d of dots) {
+        const x1 = d.x * cy - d.z * sy;
+        const z1 = d.x * sy + d.z * cy;
+        const y2 = d.y * cx - z1 * sx;
+        const z2 = d.y * sx + z1 * cx;
+        const depth = (z2 + 1) / 2;
+        ctx.globalAlpha = 0.08 + depth * depth * 0.75;
+        ctx.fillStyle = depth > 0.72 ? accent : "#8A9180";
+        const r = 0.6 + depth * 1.1;
+        ctx.beginPath();
+        ctx.arc(half + x1 * radius * 0.98, half + y2 * radius * 0.98, r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+
       points.forEach((p, i) => {
         const x1 = p.x * cy - p.z * sy;
         const z1 = p.x * sy + p.z * cy;
@@ -56,7 +100,7 @@ export function StackGlobe() {
         s.transform = `translate3d(${(x1 * radius).toFixed(1)}px, ${(y2 * radius).toFixed(1)}px, 0) translate(-50%, -50%) scale(${scale.toFixed(3)})`;
         // Depth is shown with color, not opacity, so every label keeps AA contrast (dim #8A9180 -> text #EDEFE8).
         s.color = `rgb(${Math.round(138 + depth * 99)}, ${Math.round(145 + depth * 94)}, ${Math.round(128 + depth * 104)})`;
-        s.borderColor = depth > 0.6 ? "#2A3124" : "#1F241B";
+        s.borderColor = depth > 0.82 ? accent : depth > 0.6 ? "#2A3124" : "#1F241B";
         s.zIndex = String(Math.round(depth * 100));
       });
     };
@@ -125,8 +169,7 @@ export function StackGlobe() {
 
   return (
     <div className="relative mx-auto aspect-square w-full max-w-[380px]">
-      <div aria-hidden="true" className="pointer-events-none absolute inset-[10%] rounded-full border border-line-subtle" />
-      <div aria-hidden="true" className="pointer-events-none absolute inset-[30%] rounded-full border border-dashed border-line-subtle" />
+      <canvas ref={canvasRef} aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full" />
       <ul
         ref={ref}
         aria-label="Tech stack"

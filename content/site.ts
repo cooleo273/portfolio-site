@@ -97,7 +97,8 @@ export const projects: Project[] = [
     category: "Web",
     color: "#C6F432",
     description: "Market intelligence platform for Ethiopia's financial and startup ecosystem.",
-    tags: ["Next.js", "TypeScript", "PostgreSQL", "Analytics"],
+    // Survey platform: Next.js + Supabase (per CV). Add the Insights platform's own stack here.
+    tags: ["Next.js", "Supabase", "Data platform", "Power Apps"],
     // liveUrl: "https://...",
     caseStudy: {
       challenge:
@@ -122,7 +123,8 @@ export const projects: Project[] = [
     category: "Web",
     color: "#5BE7FF",
     description: "Backtesting platform for financial traders, built solo from the ground up.",
-    tags: ["React", "TypeScript", "Node.js", "Charts"],
+    // Add the real stack here.
+    tags: ["UI/UX design", "Frontend", "Backend", "Solo build"],
     caseStudy: {
       challenge: "Traders needed a reliable way to replay markets and test strategies against historical data before risking capital.",
       built: [
@@ -260,32 +262,122 @@ export const about = {
   ],
 };
 
-/**
- * The 3D "under the hood" diagram. Node ids are positioned in components/three/layout.ts;
- * edit the text here. Each step highlights the edges it lists ("from>to").
- */
-export const system = {
-  intro:
-    "The payments flow behind SkillBridge, rebuilt in 3D: escrow, a double-entry ledger and payouts in two currencies. Drag to orbit, or pick a step.",
+/* ---------- 3D architecture explorer ("how I build systems") ---------- */
+
+export type SystemShape = "screen" | "server" | "box" | "stack" | "database" | "coin" | "orb" | "doc";
+
+export type SystemGraph = {
+  /** Matches a project slug so case studies can link to their 3D view. */
+  slug: string;
+  title: string;
+  summary: string;
   nodes: {
-    web: { label: "Web client", detail: "The marketplace where clients hire remote tech talent and freelancers manage their wallets." },
-    api: { label: "API", detail: "Node.js + Express + TypeScript. Validates every request and routes it to the right service." },
-    auth: { label: "Auth", detail: "Authenticates and authorizes every call that touches a wallet." },
-    escrow: { label: "Escrow", detail: "Holds client funds until work is approved, then releases them automatically." },
-    disputes: { label: "Disputes", detail: "Dispute handling and reputation, tied into the escrow release workflow." },
-    ledger: { label: "Ledger", detail: "Double-entry: every movement writes a balanced debit and credit, so balances always reconcile." },
-    db: { label: "PostgreSQL", detail: "Source of truth, accessed through Prisma ORM." },
-    stripe: { label: "Stripe", detail: "Global payouts." },
-    chapa: { label: "Chapa", detail: "Ethiopian mobile wallet withdrawals. Wallets hold both USD and ETB." },
-  },
-  steps: [
-    { title: "Client sends a request", edges: ["web>api"] },
-    { title: "Request authenticated", edges: ["api>auth", "auth>db"] },
-    { title: "Funds held in escrow", edges: ["api>escrow", "disputes>escrow"] },
-    { title: "Ledger records both sides", edges: ["escrow>ledger", "ledger>db"] },
-    { title: "Payout via Stripe or Chapa", edges: ["escrow>stripe", "escrow>chapa"] },
-  ],
+    id: string;
+    label: string;
+    detail: string;
+    shape: SystemShape;
+    color: string;
+    /** Grid position: [column, row]. Columns flow left to right, rows go front to back. */
+    at: [number, number];
+  }[];
+  /** Connections as [from, to] node ids. */
+  edges: [string, string][];
+  /** Walkthrough steps; each lights up the edges it lists as "from>to". */
+  steps: { title: string; edges: string[] }[];
 };
+
+export const systems: SystemGraph[] = [
+  {
+    slug: "skillbridge",
+    title: "SkillBridge",
+    summary: "Escrow payments, multi-currency wallets and a double-entry ledger for a freelance marketplace.",
+    nodes: [
+      { id: "web", label: "Web client", detail: "The marketplace where clients hire remote tech talent and freelancers manage their wallets.", shape: "screen", color: "#5BE7FF", at: [0, 1] },
+      { id: "api", label: "API", detail: "Node.js + Express + TypeScript. Validates every request and routes it to the right service.", shape: "server", color: "#EDEFE8", at: [1, 1] },
+      { id: "auth", label: "Auth", detail: "Authenticates and authorizes every call that touches a wallet.", shape: "box", color: "#B69CFF", at: [2, 0] },
+      { id: "escrow", label: "Escrow", detail: "Holds client funds until work is approved, then releases them automatically.", shape: "box", color: "#FFD84B", at: [2, 1] },
+      { id: "disputes", label: "Disputes", detail: "Dispute handling and reputation, tied into the escrow release workflow.", shape: "box", color: "#FF8A5B", at: [2, 2] },
+      { id: "ledger", label: "Ledger", detail: "Double-entry: every movement writes a balanced debit and credit, so balances always reconcile.", shape: "stack", color: "#C6F432", at: [3, 1] },
+      { id: "db", label: "PostgreSQL", detail: "Source of truth, accessed through Prisma ORM.", shape: "database", color: "#5BE7FF", at: [4, 0.2] },
+      { id: "stripe", label: "Stripe", detail: "Global payouts.", shape: "coin", color: "#B69CFF", at: [4, 1.5] },
+      { id: "chapa", label: "Chapa", detail: "Ethiopian mobile wallet withdrawals. Wallets hold both USD and ETB.", shape: "coin", color: "#C6F432", at: [3.3, 2.4] },
+    ],
+    edges: [["web", "api"], ["api", "auth"], ["auth", "db"], ["api", "escrow"], ["disputes", "escrow"], ["escrow", "ledger"], ["ledger", "db"], ["escrow", "stripe"], ["escrow", "chapa"]],
+    steps: [
+      { title: "Client sends a request", edges: ["web>api"] },
+      { title: "Request authenticated", edges: ["api>auth", "auth>db"] },
+      { title: "Funds held in escrow", edges: ["api>escrow", "disputes>escrow"] },
+      { title: "Ledger records both sides", edges: ["escrow>ledger", "ledger>db"] },
+      { title: "Payout via Stripe or Chapa", edges: ["escrow>stripe", "escrow>chapa"] },
+    ],
+  },
+  {
+    slug: "ewket-ai",
+    title: "Ewket AI",
+    summary: "A 24/7 AI study buddy: a modular NestJS backend proxying Groq and Gemini with streamed answers.",
+    nodes: [
+      { id: "client", label: "React + Vite app", detail: "Responsive chat interface that renders answers as they stream in.", shape: "screen", color: "#5BE7FF", at: [0, 1] },
+      { id: "api", label: "NestJS API", detail: "Secure, modular backend. Every feature is its own module.", shape: "server", color: "#EDEFE8", at: [1, 1] },
+      { id: "auth", label: "JWT auth", detail: "Secure user authentication with JSON Web Tokens.", shape: "box", color: "#B69CFF", at: [1, -0.2] },
+      { id: "proxy", label: "AI proxy", detail: "Proxies requests to the model providers and streams responses back in real time.", shape: "box", color: "#FFD84B", at: [2, 1] },
+      { id: "groq", label: "Groq", detail: "Fast inference provider behind the proxy.", shape: "orb", color: "#FF8A5B", at: [3, 0.3] },
+      { id: "gemini", label: "Gemini", detail: "Google's models, available through the same proxy.", shape: "orb", color: "#B69CFF", at: [3, 1.7] },
+      { id: "sanitize", label: "JSON sanitizer", detail: "Cleans model output so structured responses stay reliable.", shape: "box", color: "#C6F432", at: [2, 2.3] },
+      { id: "sessions", label: "Chat sessions", detail: "Session management so students can pick up where they left off.", shape: "stack", color: "#C6F432", at: [1, 2.3] },
+      { id: "db", label: "Prisma ORM", detail: "Data access layer for users and chat history.", shape: "database", color: "#5BE7FF", at: [0, 2.4] },
+      { id: "email", label: "Email", detail: "Automated email notifications.", shape: "doc", color: "#FF8A5B", at: [2, -0.2] },
+    ],
+    edges: [["client", "api"], ["api", "auth"], ["api", "proxy"], ["proxy", "groq"], ["proxy", "gemini"], ["groq", "sanitize"], ["gemini", "sanitize"], ["sanitize", "api"], ["api", "sessions"], ["sessions", "db"], ["api", "email"]],
+    steps: [
+      { title: "Student asks a question", edges: ["client>api"] },
+      { title: "Authenticated with JWT", edges: ["api>auth"] },
+      { title: "Routed to Groq or Gemini", edges: ["api>proxy", "proxy>groq", "proxy>gemini"] },
+      { title: "Sanitized and streamed back", edges: ["groq>sanitize", "gemini>sanitize", "sanitize>api"] },
+      { title: "Session saved, email sent", edges: ["api>sessions", "sessions>db", "api>email"] },
+    ],
+  },
+  {
+    slug: "shega-insights",
+    title: "Shega Insights",
+    summary: "Market intelligence on Ethiopia's financial and startup ecosystem, from raw data to investor-ready insight.",
+    nodes: [
+      { id: "sources", label: "Ecosystem data", detail: "Information on Ethiopia's financial and startup ecosystem.", shape: "doc", color: "#FFD84B", at: [0, 1] },
+      { id: "structure", label: "Structuring", detail: "Aggregates and structures the raw insights into consistent data.", shape: "server", color: "#B69CFF", at: [1, 1] },
+      { id: "datasets", label: "Datasets", detail: "Searchable datasets investors can filter and explore.", shape: "database", color: "#5BE7FF", at: [2, 0] },
+      { id: "analytics", label: "Analytics", detail: "Analytics tools for comparing companies and sectors.", shape: "box", color: "#C6F432", at: [2, 1] },
+      { id: "reports", label: "Research reports", detail: "Published research for decision-makers.", shape: "doc", color: "#FF8A5B", at: [2, 2] },
+      { id: "platform", label: "Shega Insights", detail: "The platform investors and decision-makers use.", shape: "screen", color: "#5BE7FF", at: [3, 1] },
+    ],
+    edges: [["sources", "structure"], ["structure", "datasets"], ["structure", "analytics"], ["structure", "reports"], ["datasets", "platform"], ["analytics", "platform"], ["reports", "platform"]],
+    steps: [
+      { title: "Ecosystem data comes in", edges: ["sources>structure"] },
+      { title: "Structured into datasets", edges: ["structure>datasets"] },
+      { title: "Analytics and research", edges: ["structure>analytics", "structure>reports"] },
+      { title: "Delivered to investors", edges: ["datasets>platform", "analytics>platform", "reports>platform"] },
+    ],
+  },
+  {
+    slug: "nexus-replay",
+    title: "Nexus Replay",
+    summary: "A backtesting platform for traders, designed and built solo from UI/UX to backend.",
+    nodes: [
+      { id: "ui", label: "Trader UI", detail: "The interface traders use to replay markets and test ideas. Designed end to end.", shape: "screen", color: "#5BE7FF", at: [0, 1] },
+      { id: "backend", label: "Backend", detail: "Serves sessions, market data and results to the UI.", shape: "server", color: "#EDEFE8", at: [1, 1] },
+      { id: "data", label: "Market history", detail: "Historical market data the replays are built from.", shape: "database", color: "#B69CFF", at: [2, 0] },
+      { id: "replay", label: "Replay engine", detail: "Steps through past price action so traders can practice in real conditions.", shape: "box", color: "#FFD84B", at: [2, 1] },
+      { id: "results", label: "Results", detail: "Trade log and performance stats for each backtest.", shape: "stack", color: "#C6F432", at: [3, 1.6] },
+    ],
+    edges: [["ui", "backend"], ["backend", "replay"], ["data", "replay"], ["replay", "results"], ["results", "backend"]],
+    steps: [
+      { title: "Trader starts a session", edges: ["ui>backend", "backend>replay"] },
+      { title: "History is replayed", edges: ["data>replay"] },
+      { title: "Trades are scored", edges: ["replay>results"] },
+      { title: "Results back to the trader", edges: ["results>backend", "ui>backend"] },
+    ],
+  },
+];
+
+export const systemsIntro = "Pick a project and watch the data move. Drag to orbit, click any part to inspect it, or go fullscreen.";
 
 export const contact = {
   heading: "Let's build something good.",

@@ -4,21 +4,21 @@ Personal portfolio for **Leul Teferi Tadesse**, fullstack software engineer. Bui
 
 ## Setup
 
-Requires Node.js 18.18 or newer (developed on Node 22).
+Requires Node.js 18.18 or newer (developed on Node 22) and pnpm (version pinned in `package.json`).
 
 ```bash
-npm install
-npm run dev        # http://localhost:3000
+pnpm install
+pnpm dev           # http://localhost:3000
 ```
 
 Other scripts:
 
 | Command             | What it does                      |
 | ------------------- | --------------------------------- |
-| `npm run build`     | Production build                  |
-| `npm start`         | Serve the production build        |
-| `npm run lint`      | ESLint                            |
-| `npm run typecheck` | TypeScript, no emit               |
+| `pnpm build`        | Production build                  |
+| `pnpm start`        | Serve the production build        |
+| `pnpm lint`         | ESLint                            |
+| `pnpm typecheck`    | TypeScript, no emit               |
 
 Copy `.env.example` to `.env.local` and set `NEXT_PUBLIC_SITE_URL` to your domain. Metadata, the sitemap and Open Graph URLs all use it.
 

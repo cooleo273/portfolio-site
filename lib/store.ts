@@ -76,15 +76,16 @@ export function showToast(message: string) {
   toastTimer = setTimeout(() => store.set({ toast: null }), 2200);
 }
 
-/* Tiny event bus for cross-component actions (terminal -> game, palette -> game). */
-type Events = { "game:start": void };
+/* Tiny event bus for cross-component actions (terminal -> game, case study -> 3D view). */
+type Events = { "game:start": undefined; "system:show": string };
 const bus = new EventTarget();
-export function emit<K extends keyof Events>(name: K) {
-  bus.dispatchEvent(new Event(name));
+export function emit<K extends keyof Events>(name: K, ...detail: Events[K] extends undefined ? [] : [Events[K]]) {
+  bus.dispatchEvent(new CustomEvent(name, { detail: detail[0] }));
 }
-export function on<K extends keyof Events>(name: K, fn: () => void) {
-  bus.addEventListener(name, fn);
-  return () => bus.removeEventListener(name, fn);
+export function on<K extends keyof Events>(name: K, fn: (detail: Events[K]) => void) {
+  const handler = (e: Event) => fn((e as CustomEvent<Events[K]>).detail);
+  bus.addEventListener(name, handler);
+  return () => bus.removeEventListener(name, handler);
 }
 
 export async function copyText(text: string) {

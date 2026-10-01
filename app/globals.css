@@ -184,3 +184,8 @@ html.booted .preloader { display: none; }
   to { transform: scaleX(1); }
 }
 .step-progress { animation: step-progress linear forwards; }
+
+/* Fullscreen 3D view lives in the top layer where the custom cursor can't follow. */
+html.has-cursor :fullscreen,
+html.has-cursor :fullscreen * { cursor: auto; }
+html.has-cursor :fullscreen button { cursor: pointer; }

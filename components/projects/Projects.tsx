@@ -87,17 +87,17 @@ export function Projects() {
       ref={sectionRef}
       aria-labelledby="work-title"
       data-tint="color-mix(in srgb, var(--accent) 2.5%, #0B0D0A)"
-      className="relative overflow-hidden py-24 sm:py-32 lg:motion-safe:flex lg:motion-safe:h-[100svh] lg:motion-safe:flex-col lg:motion-safe:justify-center lg:motion-safe:py-0"
+      className="relative overflow-hidden py-24 sm:py-32 lg:motion-safe:flex lg:motion-safe:h-[100svh] lg:motion-safe:flex-col lg:motion-safe:justify-center-safe lg:motion-safe:pb-6 lg:motion-safe:pt-[76px]"
     >
       <div className="container-x">
-        <div className="mb-10 flex flex-col gap-8 lg:mb-12 lg:flex-row lg:items-end lg:justify-between">
+        <div className="mb-10 flex flex-col gap-8 lg:mb-12 lg:flex-row lg:items-end lg:justify-between lg:motion-safe:mb-8">
           <div>
             <SectionLabel index={1} text="selected work" className="mb-5" />
             <RevealHeading
               id="work-title"
               text="Things I've built and shipped."
               accentWords={["shipped."]}
-              className="max-w-3xl text-[clamp(2.4rem,6vw,4.75rem)] font-semibold leading-[0.95] tracking-[-0.035em]"
+              className="max-w-3xl text-[clamp(2.4rem,6vw,4.75rem)] font-semibold leading-[0.95] tracking-[-0.035em] lg:motion-safe:max-w-none lg:motion-safe:text-[min(3.6vw,7svh)]"
             />
           </div>
 
@@ -137,7 +137,7 @@ export function Projects() {
       <div className="container-x lg:motion-safe:max-w-none">
         <motion.ul
           ref={trackRef}
-          className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 lg:motion-safe:flex lg:motion-safe:w-max lg:motion-safe:gap-6 lg:motion-safe:pr-16 lg:motion-safe:will-change-transform"
+          className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 lg:motion-safe:flex lg:motion-safe:w-max lg:motion-safe:gap-6 lg:motion-safe:pl-[max(0px,calc((100vw-1440px)/2))] lg:motion-safe:pr-16 lg:motion-safe:will-change-transform"
           aria-label="Projects"
         >
           <AnimatePresence mode="popLayout" initial={false}>
@@ -149,7 +149,7 @@ export function Projects() {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.92 }}
                 transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-                className="lg:motion-safe:w-[clamp(360px,30vw,460px)] lg:motion-safe:shrink-0"
+                className="lg:motion-safe:w-[clamp(320px,min(30vw,calc((100svh-540px)*1.6+24px)),460px)] lg:motion-safe:shrink-0"
               >
                 <div data-reveal>
                   <ProjectCard project={p} index={projects.indexOf(p)} onOpen={() => setSelected(p)} />
@@ -160,7 +160,7 @@ export function Projects() {
         </motion.ul>
       </div>
 
-      <div className="container-x mt-10 hidden lg:motion-safe:block" aria-hidden="true">
+      <div className="container-x mt-6 hidden lg:motion-safe:block" aria-hidden="true">
         <div className="flex items-center gap-4 font-mono text-[11px] text-dim">
           <span>scroll</span>
           <div className="h-px flex-1 bg-line-subtle">

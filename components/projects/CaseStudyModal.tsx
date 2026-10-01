@@ -4,9 +4,9 @@ import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { projects, type Project } from "@/content/site";
+import { projects, systems, type Project } from "@/content/site";
 import { lockScroll } from "@/lib/scroll";
-import { store } from "@/lib/store";
+import { emit, store } from "@/lib/store";
 
 type Props = { project: Project; onClose: () => void };
 
@@ -119,6 +119,18 @@ export function CaseStudyModal({ project, onClose }: Props) {
             </Block>
             <Block title="links">
               <div className="flex flex-wrap gap-2">
+                {systems.some((g) => g.slug === project.slug) && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onClose();
+                      setTimeout(() => emit("system:show", project.slug), 320);
+                    }}
+                    className="inline-flex items-center gap-2 rounded-full border border-accent px-5 py-2.5 text-[14px] text-text transition-colors hover:bg-accent hover:text-bg"
+                  >
+                    Explore the architecture in 3D
+                  </button>
+                )}
                 {project.liveUrl && (
                   <a href={project.liveUrl} target="_blank" rel="noreferrer" className="rounded-full bg-accent px-5 py-2.5 text-[14px] font-medium text-bg">
                     Live demo<span className="sr-only"> (opens in new tab)</span>
