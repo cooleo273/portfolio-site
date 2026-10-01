@@ -1,0 +1,186 @@
+@import "tailwindcss";
+
+/* ---------- Design tokens ---------- */
+@theme {
+  --color-bg: #0b0d0a;
+  --color-surface: #11140f;
+  --color-surface-hover: #151912;
+  --color-line: #2a3124;
+  --color-line-subtle: #1f241b;
+  --color-text: #edefe8;
+  --color-muted: #b4baaa;
+  --color-dim: #8a9180;
+  --color-lime: #c6f432;
+  --color-coral: #ff8a5b;
+  --color-cyan: #5be7ff;
+  --color-purple: #b69cff;
+  --color-yellow: #ffd84b;
+
+  --radius-card: 20px;
+  --radius-panel: 24px;
+  --radius-chip: 14px;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@theme inline {
+  --color-accent: var(--accent);
+  --font-sans: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+:root {
+  --accent: #c6f432;
+  --tint: #0b0d0a;
+  color-scheme: dark;
+}
+html[data-accent="cyan"] { --accent: #5be7ff; }
+html[data-accent="coral"] { --accent: #ff8a5b; }
+html[data-accent="purple"] { --accent: #b69cff; }
+
+/* ---------- Base ---------- */
+html {
+  background: var(--color-bg);
+  color: var(--color-text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* body stays transparent so the fixed #bg-tint layer can shift tint per section */
+body {
+  background: transparent;
+  font-family: var(--font-sans);
+  overflow-x: clip;
+}
+
+#bg-tint {
+  background-color: var(--tint, #0b0d0a);
+  transition: background-color 1.2s ease;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--color-bg);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+/* Lenis */
+html.lenis,
+html.lenis body { height: auto; }
+.lenis:not(.lenis-autoToggle).lenis-stopped { overflow: clip; }
+.lenis [data-lenis-prevent] { overscroll-behavior: contain; }
+
+/* Custom cursor replaces the native one only when active (fine pointer + JS). */
+html.has-cursor,
+html.has-cursor a,
+html.has-cursor button,
+html.has-cursor [role="button"] { cursor: none; }
+html.has-cursor input,
+html.has-cursor textarea { cursor: text; }
+
+/* Skip link */
+.skip-link {
+  position: fixed;
+  left: 16px;
+  top: -60px;
+  z-index: 300;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--color-bg);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  transition: top 0.2s;
+}
+.skip-link:focus { top: 16px; }
+
+/* ---------- Initial animation states (only with JS and motion allowed) ---------- */
+@media (prefers-reduced-motion: no-preference) {
+  html.js .hero-char {
+    transform: translate3d(0, 110%, 0) rotate(8deg);
+  }
+  html.js [data-hero-fade] {
+    opacity: 0;
+    transform: translate3d(0, 24px, 0);
+  }
+}
+
+html:not(.js) .preloader,
+html.booted .preloader { display: none; }
+
+/* ---------- Utilities ---------- */
+@utility container-x {
+  width: 100%;
+  max-width: 1440px;
+  margin-inline: auto;
+  padding-inline: 16px;
+  @media (width >= 40rem) { padding-inline: 32px; }
+  @media (width >= 80rem) { padding-inline: 56px; }
+}
+
+@utility label-mono {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: lowercase;
+  color: var(--color-dim);
+}
+
+@keyframes blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+.blink { animation: blink 1.05s step-end infinite; }
+
+@keyframes pulse-ring {
+  0% { transform: scale(1); opacity: 0.7; }
+  100% { transform: scale(2.6); opacity: 0; }
+}
+.pulse-ring { animation: pulse-ring 1.6s var(--ease-out-expo) infinite; }
+
+@keyframes spin-slow { to { transform: rotate(360deg); } }
+.spin-slow { animation: spin-slow 18s linear infinite; }
+
+@keyframes float-y {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+.float-y { animation: float-y 5s ease-in-out infinite; }
+
+/* Hide scrollbars on the terminal output but keep it scrollable */
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---------- Cursor ---------- */
+.cursor-ring.is-hover { background-color: color-mix(in srgb, var(--accent) 12%, transparent); }
+.cursor-ring[data-label] { background-color: var(--accent); border-color: var(--accent); }
+
+@keyframes scroll-hint {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(300%); }
+}
+.scroll-hint { animation: scroll-hint 1.6s cubic-bezier(0.65, 0, 0.35, 1) infinite; }
+
+@keyframes step-progress {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+.step-progress { animation: step-progress linear forwards; }
